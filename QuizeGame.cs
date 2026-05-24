@@ -13,7 +13,8 @@ namespace WinFormsApp12
         private Button _optionTwoButton;
         private Button _optionThreeButton;
         private Label _questionLabel;
-
+        private Label _titleLabel;
+        private Button _startButton;
         private Player _player;
         private bool _isGameActive = true;
 
@@ -25,7 +26,7 @@ namespace WinFormsApp12
             _optionTwoButton.Click += OptinTwoClicked;
             _optionThreeButton.Click += OptinThreeClicked;
             _newGameButton.Click += OnNewGameButtonClicked;
-            StartNewGame();
+            _startButton.Click += StartButtonClicked;
         }
 
         private void StartNewGame()
@@ -42,6 +43,28 @@ namespace WinFormsApp12
             this.MinimumSize = new Size(700, 500);
             this.BackColor = Color.Black;
             this.StartPosition = FormStartPosition.CenterScreen;
+            _titleLabel = new Label
+            {
+                Location = new Point(250, 100),
+                Size = new Size(300, 70),
+                Text = "Игра ума",
+                ForeColor = Color.White,
+                BackColor = Color.Black,
+                Font = new Font("Segoe UI", 26, FontStyle.Bold),
+                TextAlign = ContentAlignment.MiddleCenter
+            };
+            _startButton = new Button
+            {
+                Location = new Point(300, 220),
+                Size = new Size(200, 60),
+                Text = "Начать игру",
+                BackColor = Color.FromArgb(40, 40, 50),
+                FlatStyle = FlatStyle.Flat,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 12, FontStyle.Bold)
+            };
+            Controls.Add(_titleLabel);
+            Controls.Add(_startButton);
             int buttonWidth = 220;
             int buttonHeight = 60;
             int startX = (this.Width - (buttonWidth * 3 + 60)) / 2;
@@ -128,6 +151,12 @@ namespace WinFormsApp12
             Controls.Add(_optionTwoButton);
             Controls.Add(_optionThreeButton);
             Controls.Add(_questionLabel);
+            _statusPanel.Visible = false;
+            _questionLabel.Visible = false;
+            _optionOneButton.Visible = false;
+            _optionTwoButton.Visible = false;
+            _optionThreeButton.Visible = false;
+            _newGameButton.Visible = false;
         }
 
         private void OnNewGameButtonClicked(object sender, EventArgs e)
@@ -200,7 +229,18 @@ namespace WinFormsApp12
         {
             WrongAnswer(_player);
         }
-
+        private void StartButtonClicked(object sender, EventArgs e)
+        {
+            _titleLabel.Visible = false;
+            _startButton.Visible = false;
+            _statusPanel.Visible = true;
+            _questionLabel.Visible = true;
+            _optionOneButton.Visible = true;
+            _optionTwoButton.Visible = true;
+            _optionThreeButton.Visible = true;
+            _newGameButton.Visible = true;
+            StartNewGame();
+        }
         public void UpdateUIFromPlayer(Player player)
         {
             if (player == null) return;
