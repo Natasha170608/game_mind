@@ -7,8 +7,8 @@ namespace QuizeGame
     public class Player
     {
 
-        public int MaxHealth { get; set; } = 5;
-        public int CurrentHealth { get; set; } = 5;
+        public int MaxHealth { get; set; } = 3;
+        public int CurrentHealth { get; set; } = 3;
         public int Experience { get; set; } = 0;
         public int Level { get; set; } = 1;
         public int MaxLevel { get; set; } = 10;
@@ -17,12 +17,7 @@ namespace QuizeGame
         public int WrongAnswer { get; set; } = 0;
         public int Question { get; set; } = 0;
 
-        public void TakeDamage(int damage)
-        {
-            CurrentHealth -= damage;
-            if (CurrentHealth < 0) { CurrentHealth = 0; }
-
-        }
+       
        
         public void newMaxlevel()
         {
