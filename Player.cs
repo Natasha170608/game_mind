@@ -27,6 +27,7 @@ namespace QuizeGame
         public void newMaxlevel()
         {
             MaxLevel += 10;
+            CurrentHealth = MaxHealth;
         }
         public void AddAnswers()
         {
