@@ -17,14 +17,15 @@ namespace WinFormsApp12
         private Button _startButton;
         private Player _player;
         private bool _isGameActive = true;
-
+        private List<QuestionData> _questions;
+        private int _currentQuestion;
         public QuizeGame()
         {
             InitializeComponent();
             InitializeCustomUI();
-            _optionOneButton.Click += OptinOneClicked;
-            _optionTwoButton.Click += OptinTwoClicked;
-            _optionThreeButton.Click += OptinThreeClicked;
+            _optionOneButton.Click += OptionClicked;
+            _optionTwoButton.Click += OptionClicked;
+            _optionThreeButton.Click += OptionClicked;
             _newGameButton.Click += OnNewGameButtonClicked;
             _startButton.Click += StartButtonClicked;
         }
@@ -33,10 +34,19 @@ namespace WinFormsApp12
         {
             _player = new Player();
             _isGameActive = true;
-            _optionOneButton.Enabled = true;
+            _questions = MathQuestions.GetQuestions();
+            _currentQuestion = 0;
+            ShowQuestion();
             UpdateUIFromPlayer(_player);
         }
-
+        private void ShowQuestion()
+        {
+            QuestionData question = _questions[_currentQuestion];
+            _questionLabel.Text = question.Text;
+            _optionOneButton.Text = question.Options[0];
+            _optionTwoButton.Text = question.Options[1];
+            _optionThreeButton.Text = question.Options[2];
+        }
         private void InitializeCustomUI()
         {
             this.Size = new Size(800, 550);
@@ -81,7 +91,6 @@ namespace WinFormsApp12
             {
                 Location = new Point(50, 140),
                 Size = new Size(700, 80),
-                Text = "Сколько будет 2+2",
                 BackColor = Color.FromArgb(30, 30, 40),
                 FlatStyle = FlatStyle.Flat,
                 ForeColor =Color.White,
@@ -106,7 +115,6 @@ namespace WinFormsApp12
             {
                 Location = new Point(startX, startY),
                 Size = new Size(buttonWidth, buttonHeight),
-                Text = "4",
                 FlatStyle = FlatStyle.Flat,
                 ForeColor = Color.White,
                 BackColor = Color.FromArgb(40, 40, 50),
@@ -118,7 +126,6 @@ namespace WinFormsApp12
             {
                 Location = new Point(startX + buttonWidth + spacing, startY),
                 Size = new Size(buttonWidth, buttonHeight),
-                Text = "3",
                 FlatStyle = FlatStyle.Flat,
                 ForeColor = Color.White,
                 BackColor = Color.FromArgb(40, 40, 50),
@@ -130,7 +137,6 @@ namespace WinFormsApp12
             {
                 Location = new Point(startX + (buttonWidth + spacing) * 2, startY),
                 Size = new Size(buttonWidth, buttonHeight),
-                Text = "5",
                 FlatStyle = FlatStyle.Flat,
                 ForeColor = Color.White,
                 BackColor = Color.FromArgb(40, 40, 50),
@@ -217,17 +223,23 @@ namespace WinFormsApp12
             }
         }
 
-        private void OptinOneClicked(object sender, EventArgs e)
+        private void OptionClicked(object sender, EventArgs e)
         {
-            CorrectAnswer(_player);
-        }
-        private void OptinTwoClicked(object sender, EventArgs e)
-        {
-           WrongAnswer(_player);
-        }
-        private void OptinThreeClicked(object sender, EventArgs e)
-        {
-            WrongAnswer(_player);
+            Button buttonNumber = (Button)sender;
+            int index = (int)buttonNumber.Tag;
+            if (index == _questions[_currentQuestion].CorrectOptionIndex)
+                CorrectAnswer(_player);
+            else
+                WrongAnswer(_player);
+            _currentQuestion++;
+            if (_currentQuestion < _questions.Count)
+            {
+                ShowQuestion();
+            }
+            else
+            {
+                ShowGameResult(true);
+            }
         }
         private void StartButtonClicked(object sender, EventArgs e)
         {
