@@ -11,9 +11,9 @@ namespace QuizeGame
         {
             return new List<QuestionData>
             {
-                new QuestionData("Сколько будет 2 + 2?", new string[] { "3", "4", "5" }, 1),
-                new QuestionData("Сколько будет 5 + 7?", new string[] { "10", "12", "13" }, 1),
-                new QuestionData("Сколько будет 9 - 4?", new string[] { "5", "6", "4" }, 0),
+                new QuestionData("Сколько будет 4,5 * 5,4 – 6,1?", new string[] { "18.2", "4", "5" }, 0),
+                new QuestionData("Сколько будет (4.8*0.4)/0.6?", new string[] { "3.1", "4.1", "3,2" }, 2),
+                new QuestionData("Сколько будет 5.4*0.8+0.08?", new string[] { "4.1", "4.4", "4.9" }, 1),
                 new QuestionData("Сколько будет 3 * 4?", new string[] { "12", "10", "14" }, 0),
                 new QuestionData("Сколько будет 15 : 3?", new string[] { "5", "6", "4" }, 0),
                 new QuestionData("Сколько будет 30 : 3?", new string[] { "5", "1", "10" }, 2),
