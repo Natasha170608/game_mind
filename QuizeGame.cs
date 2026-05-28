@@ -34,6 +34,9 @@ namespace WinFormsApp12
         {
             _player = new Player();
             _isGameActive = true;
+            _optionOneButton.Enabled = true;
+            _optionTwoButton.Enabled = true;
+            _optionThreeButton.Enabled = true;
             _questions = MathQuestions.GetQuestions();
             _currentQuestion = 0;
             ShowQuestion();
@@ -189,6 +192,8 @@ namespace WinFormsApp12
             {
                 _isGameActive = false;
                 _optionOneButton.Enabled = false;
+                _optionTwoButton.Enabled = false;
+                _optionThreeButton.Enabled = false;
                 ShowGameResult(true); 
                 return;
             }
@@ -212,6 +217,8 @@ namespace WinFormsApp12
             {
                 _isGameActive = false;
                 _optionOneButton.Enabled = false;
+                _optionTwoButton.Enabled= false;
+                _optionThreeButton.Enabled= false;
                 ShowGameResult(true);
                 return;
             }
