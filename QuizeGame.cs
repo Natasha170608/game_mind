@@ -37,9 +37,16 @@ namespace WinFormsApp12
         {
             _player = new Player();
             _isGameActive = true;
+
             _questionsMath = MathQuestions.GetQuestions();
             _questionsRidle = RiddleQuestions.GetQuestions();
             _questionsTrueFalse = TrueFalseQuestions.GetQuestions();
+
+            _optionOneButton.Enabled = true;
+            _optionTwoButton.Enabled = true;
+            _optionThreeButton.Enabled = true;
+            _questions = MathQuestions.GetQuestions();
+
             _currentQuestion = 0;
 
             
@@ -248,6 +255,20 @@ namespace WinFormsApp12
             player.AddQuestion();
             player.AddAnswers();
             _statusPanel?.UpdateStatus(player);
+
+
+
+            if (player.Question >= player.TotalAnswers && player.CurrentHealth > 0)
+            {
+                _isGameActive = false;
+                _optionOneButton.Enabled = false;
+                _optionTwoButton.Enabled = false;
+                _optionThreeButton.Enabled = false;
+                ShowGameResult(true); 
+                return;
+            }
+            
+
         }
 
         public void WrongAnswer(Player player)
@@ -260,6 +281,17 @@ namespace WinFormsApp12
             player.CurrentHealth -= 1; 
 
             _statusPanel?.UpdateStatus(player);
+
+
+            if (player.Question >= player.TotalAnswers && player.CurrentHealth > 0)
+            {
+                _isGameActive = false;
+                _optionOneButton.Enabled = false;
+                _optionTwoButton.Enabled= false;
+                _optionThreeButton.Enabled= false;
+                ShowGameResult(true);
+                return;
+            }
 
             if (player.CurrentHealth <= 0)
             {
