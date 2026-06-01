@@ -21,6 +21,7 @@ namespace WinFormsApp12
         private List<QuestionData> _questionsRidle;
         private List<QuestionData> _questionsTrueFalse;
         private int _currentQuestion;
+        private TextBox _answerTextBox;
 
         public QuizeGame()
         {
@@ -31,6 +32,7 @@ namespace WinFormsApp12
             _optionThreeButton.Click += OptionClicked;
             _newGameButton.Click += OnNewGameButtonClicked;
             _startButton.Click += StartButtonClicked;
+            _answerTextBox.KeyDown += AnswerTextBoxKeyDown;
         }
 
         private void StartNewGame()
@@ -57,7 +59,19 @@ namespace WinFormsApp12
         private void ShowQuestion()
         {
             List<QuestionData> currentQuestions = GetCurrentQuestions();
-
+            if (_player.Level == 1 || _player.Level == 3)
+            {
+                _answerTextBox.Visible = true;
+                _optionOneButton.Visible = false;
+                _optionTwoButton.Visible = false;
+                _optionThreeButton.Visible = false;
+            }
+            else { 
+                _answerTextBox.Visible= false;
+                _optionOneButton.Visible= true;
+                _optionTwoButton.Visible= true;
+                _optionThreeButton.Visible= true;
+            }
             if (_currentQuestion >= currentQuestions.Count)
             {
 
@@ -169,6 +183,15 @@ namespace WinFormsApp12
                 TextAlign = ContentAlignment.MiddleCenter,
                 BorderStyle = BorderStyle.FixedSingle
             };
+
+            _answerTextBox = new TextBox
+            {
+                Location = new Point(300,350),
+                Size = new Size(200,30),
+                Font = new Font("Segoe UI", 12)
+            };
+            Controls.Add( _answerTextBox );
+            _answerTextBox.Visible = false;
 
             _newGameButton = new Button
             {
@@ -358,7 +381,42 @@ namespace WinFormsApp12
                 ShowQuestion();
             }
         }   
-
+        private void AnswerTextBoxKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                CheckKeyAnswer();
+            }
+        }
+        private void CheckKeyAnswer()
+        {
+            double userAnswer;
+            if (!double.TryParse(
+                    _answerTextBox.Text.Replace('.', ','),
+                    out userAnswer))
+            {
+                MessageBox.Show(
+                    "Ошибка! Введите число.",
+                    "Неверный ввод",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                _answerTextBox.Clear();
+                _answerTextBox.Focus();
+                return;
+            }
+            List<QuestionData> currentQuestions = GetCurrentQuestions();
+            int correctIndex = currentQuestions[_currentQuestion].CorrectOptionIndex;
+            string correctAnswerText = currentQuestions[_currentQuestion].Options[correctIndex];
+            double correctAnswer = Convert.ToDouble(correctAnswerText.Replace('.', ','));
+            if (userAnswer == correctAnswer)
+                CorrectAnswer(_player);
+            else
+                WrongAnswer(_player);
+            _answerTextBox.Clear();
+            _currentQuestion++;
+            if (_currentQuestion < currentQuestions.Count)
+                ShowQuestion();
+        }
         private void StartButtonClicked(object sender, EventArgs e)
         {
             _titleLabel.Visible = false;
