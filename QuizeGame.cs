@@ -275,7 +275,7 @@ namespace WinFormsApp12
 
             player.AddQuestion();
             player.AddWrong();
-            player.CurrentHealth -= 1; 
+            player.CurrentHealth --; 
 
             _statusPanel?.UpdateStatus(player);
 
@@ -309,6 +309,7 @@ namespace WinFormsApp12
             {
                 if (_player.Level == 1)
                 {
+                    _player.CurrentHealth = _player.CurrentHealth;
                     SwitchToLevel2();
                 }
                 else if (_player.Level == 2)
@@ -335,10 +336,12 @@ namespace WinFormsApp12
             {
                 if (_player.Level == 1 && _player.CurrentHealth > 0)
                 {
+                    _player.CurrentHealth = _player.MaxHealth;
                     SwitchToLevel2();
                 }
                 else if (_player.Level == 2 && _player.CurrentHealth > 0)
                 {
+                    _player.CurrentHealth = _player.MaxHealth;
                     SwitchToLevel3();
                 }
                 else if (_player.Level == 3 && _player.CurrentHealth > 0)
