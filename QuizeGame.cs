@@ -2,7 +2,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-using WinFormsApp12;
+
 namespace WinFormsApp12
 {
     public partial class QuizeGame : Form
@@ -15,106 +15,30 @@ namespace WinFormsApp12
         private Label _questionLabel;
         private Label _titleLabel;
         private Button _startButton;
+        private TextBox _answerTextBox;
+
         private Player _player;
         private bool _isGameActive = true;
-        private List<QuestionData> _questionsMath;
-        private List<QuestionData> _questionsRidle;
-        private List<QuestionData> _questionsTrueFalse;
-        private int _currentQuestion;
+        private int _currentLevelNumber;
+
+        private Level1 _level1;
+        private Level2 _level2;
+        private Level3 _level3;
+
+        private GameResultPresenter _resultPresenter;
 
         public QuizeGame()
         {
             InitializeComponent();
             InitializeCustomUI();
+            InitializeLevels();
+
             _optionOneButton.Click += OptionClicked;
             _optionTwoButton.Click += OptionClicked;
             _optionThreeButton.Click += OptionClicked;
             _newGameButton.Click += OnNewGameButtonClicked;
             _startButton.Click += StartButtonClicked;
-        }
-
-        private void StartNewGame()
-        {
-            _player = new Player();
-            _isGameActive = true;
-
-            _optionOneButton.Enabled = true;
-            _optionTwoButton.Enabled = true;
-            _optionThreeButton.Enabled = true;
-
-            _questionsMath = MathQuestions.GetQuestions();
-            _questionsRidle = RiddleQuestions.GetQuestions();
-            _questionsTrueFalse = TrueFalseQuestions.GetQuestions();
-
-            _currentQuestion = 0;
-
-            
-
-            ShowQuestion();
-            UpdateUIFromPlayer(_player);
-        }
-
-        private void ShowQuestion()
-        {
-            List<QuestionData> currentQuestions = GetCurrentQuestions();
-
-            if (_currentQuestion >= currentQuestions.Count)
-            {
-
-                if (_player.Level == 1)
-                {
-                    SwitchToLevel2();
-                    return;
-                }
-                else if (_player.Level == 2)
-                {
-                    SwitchToLevel3();
-                    return;
-                }
-                else if (_player.Level==3)
-                {
-                    ShowGameResult(true);
-                }
-
-            }
-
-            QuestionData question = currentQuestions[_currentQuestion];
-            _questionLabel.Text = question.Text;
-            _optionOneButton.Text = question.Options[0];
-            _optionTwoButton.Text = question.Options[1];
-            _optionThreeButton.Text = question.Options[2];
-        }
-
-        private List<QuestionData> GetCurrentQuestions()
-        {
-            if (_player.Level == 1)
-            {
-                return _questionsMath;
-            }
-
-            else if (_player.Level == 2)
-            {
-                return _questionsRidle;
-            }
-            else
-            {
-                return _questionsTrueFalse;
-            }
-        }
-
-        private void SwitchToLevel2()
-        {
-            _player.Level = 2;
-            _currentQuestion = 0;
-            ShowQuestion();
-            UpdateUIFromPlayer(_player);
-        }
-        private void SwitchToLevel3()
-        {
-            _player.Level = 3;
-            _currentQuestion = 0;
-            ShowQuestion();
-            UpdateUIFromPlayer(_player);
+            _answerTextBox.KeyDown += AnswerTextBoxKeyDown;
         }
 
         private void InitializeCustomUI()
@@ -164,7 +88,7 @@ namespace WinFormsApp12
             _questionLabel = new Label
             {
                 Location = new Point(50, 150),
-                Size = new Size(700,180),
+                Size = new Size(700, 180),
                 BackColor = Color.FromArgb(30, 30, 40),
                 FlatStyle = FlatStyle.Flat,
                 ForeColor = Color.White,
@@ -172,6 +96,15 @@ namespace WinFormsApp12
                 TextAlign = ContentAlignment.MiddleCenter,
                 BorderStyle = BorderStyle.FixedSingle
             };
+
+            _answerTextBox = new TextBox
+            {
+                Location = new Point(300, 350),
+                Size = new Size(200, 30),
+                Font = new Font("Segoe UI", 12)
+            };
+            Controls.Add(_answerTextBox);
+            _answerTextBox.Visible = false;
 
             _newGameButton = new Button
             {
@@ -231,9 +164,6 @@ namespace WinFormsApp12
 
             Controls.Add(_statusPanel);
             Controls.Add(_newGameButton);
-            Controls.Add(_optionOneButton);
-            Controls.Add(_optionTwoButton);
-            Controls.Add(_optionThreeButton);
             Controls.Add(_questionLabel);
 
             _statusPanel.Visible = false;
@@ -244,123 +174,142 @@ namespace WinFormsApp12
             _newGameButton.Visible = false;
         }
 
-        private void OnNewGameButtonClicked(object sender, EventArgs e)
+        private void InitializeLevels()
         {
-            StartNewGame();
+            _player = new Player();
+
+            _resultPresenter = new GameResultPresenter(_player, StartNewGame, () => Application.Exit());
+
+            _level1 = new Level1(_player, _statusPanel, _answerTextBox, _questionLabel,
+                                OnLevel1Complete, OnGameOver, OnGameComplete);
+
+            _level2 = new Level2(_player, _statusPanel, _optionOneButton, _optionTwoButton,
+                                _optionThreeButton, _questionLabel, OnLevel2Complete, OnGameOver, OnGameComplete);
+
+            _level3 = new Level3(_player, _statusPanel, _optionOneButton, _optionTwoButton,
+                                _optionThreeButton, _questionLabel, OnGameComplete, OnGameOver);
         }
 
-        public void CorrectAnswer(Player player)
+        private void StartNewGame()
         {
-            if (!_isGameActive) return;
-            if (player.CurrentHealth <= 0) return;
+            _player = new Player();
+            _isGameActive = true;
+            _currentLevelNumber = 1;
 
-            player.AddQuestion();
-            player.AddAnswers();
-            _statusPanel?.UpdateStatus(player);
+            
+            _resultPresenter = new GameResultPresenter(_player, StartNewGame, () => Application.Exit());
 
+            _level1 = new Level1(_player, _statusPanel, _answerTextBox, _questionLabel,
+                                OnLevel1Complete, OnGameOver, OnGameComplete);
 
-            if (player.Question >= player.TotalAnswers && player.CurrentHealth > 0)
-            {
-                _isGameActive = false;
-                _optionOneButton.Enabled = false;
-                _optionTwoButton.Enabled = false;
-                _optionThreeButton.Enabled = false;
-                ShowGameResult(true); 
-                return;
-            }
+            _level2 = new Level2(_player, _statusPanel, _optionOneButton, _optionTwoButton,
+                                _optionThreeButton, _questionLabel, OnLevel2Complete, OnGameOver, OnGameComplete);
 
+            _level3 = new Level3(_player, _statusPanel, _optionOneButton, _optionTwoButton,
+                                _optionThreeButton, _questionLabel, OnGameComplete, OnGameOver);
+
+            _answerTextBox.Visible = false;
+            _optionOneButton.Visible = false;
+            _optionTwoButton.Visible = false;
+            _optionThreeButton.Visible = false;
+
+            _optionOneButton.Enabled = true;
+            _optionTwoButton.Enabled = true;
+            _optionThreeButton.Enabled = true;
+            _answerTextBox.Enabled = true;
+
+            StartLevel1();
+            UpdateUIFromPlayer(_player);
         }
 
-        public void WrongAnswer(Player player)
+        private void StartLevel1()
         {
-            if (!_isGameActive) return;
-            if (player.CurrentHealth <= 0) return;
+            _currentLevelNumber = 1;
+            _level1.Start();
+        }
 
-            player.AddQuestion();
-            player.AddWrong();
-            player.CurrentHealth --; 
+        private void StartLevel2()
+        {
+            _player.CurrentHealth = _player.MaxHealth;
+            _currentLevelNumber = 2;
+            _level2.Start();
+        }
 
-            _statusPanel?.UpdateStatus(player);
+        private void StartLevel3()
+        {
+            _player.CurrentHealth = _player.MaxHealth;
+            _currentLevelNumber = 3;
+            _level3.Start();
+        }
 
-            if (player.Question >= player.TotalAnswers && player.CurrentHealth > 0)
+        private void OnLevel1Complete()
+        {
+            if (_player.CurrentHealth > 0)
             {
-                _isGameActive = false;
-                _optionOneButton.Enabled = false;
-                _optionTwoButton.Enabled= false;
-                _optionThreeButton.Enabled= false;
-                ShowGameResult(true);
-                return;
+                StartLevel2();
             }
-
-            if (player.CurrentHealth <= 0)
+            else
             {
-                _isGameActive = false;
-                ShowGameResult(false);
+                OnGameOver();
             }
+        }
+
+        private void OnLevel2Complete()
+        {
+            if (_player.CurrentHealth > 0)
+            {
+                StartLevel3();
+            }
+            else
+            {
+                OnGameOver();
+            }
+        }
+
+        private void OnGameComplete()
+        {
+            _isGameActive = false;
+            _optionOneButton.Enabled = false;
+            _optionTwoButton.Enabled = false;
+            _optionThreeButton.Enabled = false;
+            _answerTextBox.Enabled = false;
+            _resultPresenter.ShowWinResult();
+        }
+
+        private void OnGameOver()
+        {
+            _isGameActive = false;
+            _optionOneButton.Enabled = false;
+            _optionTwoButton.Enabled = false;
+            _optionThreeButton.Enabled = false;
+            _answerTextBox.Enabled = false;
+            _resultPresenter.ShowLoseResult();
         }
 
         private void OptionClicked(object sender, EventArgs e)
         {
             if (!_isGameActive || _player.CurrentHealth <= 0) return;
 
-            Button buttonNumber = (Button)sender;
-            int index = (int)buttonNumber.Tag;
+            Button button = (Button)sender;
+            int selectedIndex = (int)button.Tag;
 
-            List<QuestionData> currentQuestions = GetCurrentQuestions();
-
-            if (_currentQuestion >= currentQuestions.Count)
+            if (_currentLevelNumber == 2)
             {
-                if (_player.Level == 1)
-                {
-                    _player.CurrentHealth = _player.CurrentHealth;
-                    SwitchToLevel2();
-                }
-                else if (_player.Level == 2)
-                {
-                    SwitchToLevel3();
-                }
-                else
-                {
-                    ShowGameResult(true);
-                }
-                return;
+                _level2?.CheckAnswer(selectedIndex);
             }
-
-            bool isCorrect = (index == currentQuestions[_currentQuestion].CorrectOptionIndex);
-
-            if (isCorrect)
-                CorrectAnswer(_player);
-            else
-                WrongAnswer(_player);
-
-            _currentQuestion++;
-
-            if (_currentQuestion >= currentQuestions.Count)
+            else if (_currentLevelNumber == 3)
             {
-                if (_player.Level == 1 && _player.CurrentHealth > 0)
-                {
-                    _player.CurrentHealth = _player.MaxHealth;
-                    SwitchToLevel2();
-                }
-                else if (_player.Level == 2 && _player.CurrentHealth > 0)
-                {
-                    _player.CurrentHealth = _player.MaxHealth;
-                    SwitchToLevel3();
-                }
-                else if (_player.Level == 3 && _player.CurrentHealth > 0)
-                {
-                    ShowGameResult(true);
-                }
-                else if (_player.CurrentHealth <= 0)
-                {
-                    ShowGameResult(false);
-                }
+                _level3?.CheckAnswer(selectedIndex);
             }
-            else
+        }
+
+        private void AnswerTextBoxKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter && _currentLevelNumber == 1 && _isGameActive)
             {
-                ShowQuestion();
+                _level1?.CheckAnswer(_answerTextBox.Text);
             }
-        }   
+        }
 
         private void StartButtonClicked(object sender, EventArgs e)
         {
@@ -368,10 +317,12 @@ namespace WinFormsApp12
             _startButton.Visible = false;
             _statusPanel.Visible = true;
             _questionLabel.Visible = true;
-            _optionOneButton.Visible = true;
-            _optionTwoButton.Visible = true;
-            _optionThreeButton.Visible = true;
             _newGameButton.Visible = true;
+            StartNewGame();
+        }
+
+        private void OnNewGameButtonClicked(object sender, EventArgs e)
+        {
             StartNewGame();
         }
 
@@ -380,46 +331,6 @@ namespace WinFormsApp12
             if (player == null) return;
             _statusPanel?.UpdateStatus(player);
             Refresh();
-        }
-
-        private void ShowGameResult(bool isWin)
-        {
-            _isGameActive = false;
-
-            string message;
-            string title;
-
-            if (isWin)
-            {
-                message = $"ПОБЕДА! \nВерных ответов: {_player.CorrectAnswers}\n" +
-                         $"Вы успешно прошли викторину!\n\nХотите начать новую игру?";
-                title = "ПОБЕДА!";
-            }
-            else
-            {
-                message = "ИГРА ОКОНЧЕНА \nВы проиграли!\n\nХотите начать новую игру?";
-                title = "ИГРА ЗАВЕРШЕНА";
-            }
-
-            DialogResult result = MessageBox.Show(
-                message,
-                title,
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Question);
-
-            if (result == DialogResult.Yes)
-            {
-                StartNewGame();
-            }
-            else
-            {
-                Application.Exit();
-            }
-        }
-
-        public void SetUIEnabled(bool enabled)
-        {
-            _newGameButton.Enabled = enabled;
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)

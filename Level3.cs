@@ -1,0 +1,119 @@
+﻿using QuizeGame;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
+
+namespace WinFormsApp12
+{
+    public class Level3
+    {
+        private List<QuestionData> _questions;
+        private int _currentQuestionIndex;
+        private Player _player;
+        private Button _optionOneButton;
+        private Button _optionTwoButton;
+        private Button _optionThreeButton;
+        private Label _questionLabel;
+        private CorrectAnswerHandler _correctHandler;
+        private WrongAnswerHandler _wrongHandler;
+        private Action _onGameComplete;
+        private Action _onGameOver;
+        private bool _isActive;
+
+        public Level3(Player player, StatusPanel statusPanel,
+                      Button optionOne, Button optionTwo, Button optionThree,
+                      Label questionLabel, Action onGameComplete, Action onGameOver)
+        {
+            _player = player;
+            _optionOneButton = optionOne;
+            _optionTwoButton = optionTwo;
+            _optionThreeButton = optionThree;
+            _questionLabel = questionLabel;
+            _onGameComplete = onGameComplete;
+            _onGameOver = onGameOver;
+            _questions = TrueFalseQuestions.GetQuestions();
+            _currentQuestionIndex = 0;
+            _isActive = false;
+            _correctHandler = new CorrectAnswerHandler(player, statusPanel, onGameComplete, onGameComplete);
+            _wrongHandler = new WrongAnswerHandler(player, statusPanel, onGameComplete, onGameOver, onGameComplete);
+        }
+
+        public void Start()
+        {
+            _isActive = true;
+            _currentQuestionIndex = 0;
+            ShowQuestion();
+        }
+
+        public void Stop()
+        {
+            _isActive = false;
+        }
+
+        public void ShowQuestion()
+        {
+            if (!_isActive) return;
+
+            if (_currentQuestionIndex >= _questions.Count)
+            {
+                CompleteGame();
+                return;
+            }
+
+            QuestionData question = _questions[_currentQuestionIndex];
+            _questionLabel.Text = question.Text;
+
+            _optionOneButton.Text = question.Options[0];
+            _optionTwoButton.Text = question.Options[1];
+            _optionThreeButton.Text = question.Options[2];
+
+            _optionOneButton.Visible = true;
+            _optionTwoButton.Visible = true;
+            _optionThreeButton.Visible = true;
+        }
+
+        public void CheckAnswer(int selectedIndex)
+        {
+            if (!_isActive) return;
+
+            QuestionData currentQuestion = _questions[_currentQuestionIndex];
+            bool isCorrect = (selectedIndex == currentQuestion.CorrectOptionIndex);
+
+            if (isCorrect)
+            {
+                _correctHandler.Handle();
+            }
+            else
+            {
+                _wrongHandler.Handle();
+
+                if (!_wrongHandler.IsPlayerAlive())
+                {
+                    _isActive = false;
+                    return;
+                }
+            }
+
+            _currentQuestionIndex++;
+
+            if (_currentQuestionIndex < _questions.Count && _player.CurrentHealth > 0)
+                ShowQuestion();
+        }
+
+        private void CompleteGame()
+        {
+            _isActive = false;
+            _optionOneButton.Visible = false;
+            _optionTwoButton.Visible = false;
+            _optionThreeButton.Visible = false;
+            _onGameComplete?.Invoke();
+        }
+
+        public void Reset()
+        {
+            _currentQuestionIndex = 0;
+        }
+
+        public bool IsActive => _isActive;
+    }
+}
