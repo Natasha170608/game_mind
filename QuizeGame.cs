@@ -88,7 +88,10 @@ namespace WinFormsApp12
         private List<QuestionData> GetCurrentQuestions()
         {
             if (_player.Level == 1)
+            {
                 return _questionsMath;
+            }
+
             else if (_player.Level == 2)
             {
                 return _questionsRidle;
@@ -174,7 +177,7 @@ namespace WinFormsApp12
             {
                 Location = new Point(20, 460),
                 Size = new Size(200, 40),
-                Text = "🔄 Новая игра",
+                Text = "Новая игра",
                 BackColor = Color.Black,
                 FlatStyle = FlatStyle.Flat,
                 ForeColor = Color.White,
