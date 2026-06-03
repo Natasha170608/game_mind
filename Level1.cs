@@ -66,10 +66,13 @@ namespace WinFormsApp12
         public void CheckAnswer(string userAnswer)
         {
             if (!_isActive) return;
-
-            if (!double.TryParse(userAnswer.Replace('.', ','), out double userValue))
+            if (_currentQuestionIndex >= _questions.Count)
             {
-                MessageBox.Show("Ошибка! Введите число.", "Неверный ввод",
+                return;
+            }
+            if (!int.TryParse(userAnswer, out int userValue))
+            {
+                MessageBox.Show("Ошибка! Введите целое число.", "Неверный ввод",
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 _answerTextBox.Clear();
                 _answerTextBox.Focus();
@@ -79,7 +82,7 @@ namespace WinFormsApp12
             QuestionData currentQuestion = _questions[_currentQuestionIndex];
             int correctIndex = currentQuestion.CorrectOptionIndex;
             string correctAnswerText = currentQuestion.Options[correctIndex];
-            double correctValue = Convert.ToDouble(correctAnswerText.Replace('.', ','));
+            int correctValue = Convert.ToInt32(correctAnswerText);
 
             bool isCorrect = (userValue == correctValue);
 
@@ -100,9 +103,15 @@ namespace WinFormsApp12
 
             _answerTextBox.Clear();
             _currentQuestionIndex++;
-
-            if (_currentQuestionIndex < _questions.Count && _player.CurrentHealth > 0)
+            if (_currentQuestionIndex >= _questions.Count)
+            {
+                CompleteLevel();
+                return;
+            }
+            if (_player.CurrentHealth > 0)
+            {
                 ShowQuestion();
+            }
         }
 
         private void CompleteLevel()
