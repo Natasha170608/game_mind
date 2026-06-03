@@ -22,7 +22,10 @@ namespace WinFormsApp12
             string message = $"ПОБЕДА! \nВерных ответов: {_player.CorrectAnswers}\n" +
                              $"Неверных ответов: {_player.WrongAnswer}\n" +
                              $"Всего вопросов: {_player.TotalAnswers}\n\n" +
-                             $"Вы успешно прошли викторину!\n\nХотите начать новую игру?";
+                             $"Вы успешно прошли викторину!\n\n" +
+                             $"1 - Новая игра\n" +
+                             $"2 - Главное меню\n" +
+                             $"Esc - Выход";
 
             ShowResultDialog(message, "ПОБЕДА!");
         }
@@ -33,7 +36,9 @@ namespace WinFormsApp12
                              $"Вы проиграли!\n" +
                              $"Верных ответов: {_player.CorrectAnswers}\n" +
                              $"Неверных ответов: {_player.WrongAnswer}\n\n" +
-                             $"Хотите начать новую игру?";
+                             $"1 - Новая игра\n" +
+                             $"2 - Главное меню\n" +
+                             $"Esc - Выход";
 
             ShowResultDialog(message, "ИГРА ЗАВЕРШЕНА");
         }
@@ -43,16 +48,20 @@ namespace WinFormsApp12
             DialogResult result = MessageBox.Show(
                 message,
                 title,
-                MessageBoxButtons.YesNo,
+                MessageBoxButtons.YesNoCancel,
                 MessageBoxIcon.Question);
 
-            if (result == DialogResult.Yes)
+            switch (result)
             {
-                _onNewGame?.Invoke();
-            }
-            else
-            {
-                _onExit?.Invoke();
+                case DialogResult.Yes:
+                    _onNewGame?.Invoke();
+                    break;
+                case DialogResult.No:
+                    _onExit?.Invoke();
+                    break;
+                case DialogResult.Cancel:
+                    Application.Exit();
+                    break;
             }
         }
     }

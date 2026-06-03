@@ -2,6 +2,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using static WinFormsApp12.Program;
 
 namespace WinFormsApp12
 {
@@ -15,6 +16,8 @@ namespace WinFormsApp12
         private Label _questionLabel;
         private Label _titleLabel;
         private Button _startButton;
+        private Button _player1;
+        private Button _player2;
         private TextBox _answerTextBox;
 
         private Player _player;
@@ -29,6 +32,7 @@ namespace WinFormsApp12
 
         public QuizeGame()
         {
+            AppState.MainForm = this;
             InitializeComponent();
             InitializeCustomUI();
             InitializeLevels();
@@ -38,6 +42,8 @@ namespace WinFormsApp12
             _optionThreeButton.Click += OptionClicked;
             _newGameButton.Click += OnNewGameButtonClicked;
             _startButton.Click += StartButtonClicked;
+            _player1.Click += Player1Clicked;
+            _player2.Click += Player2Clicked;
             _answerTextBox.KeyDown += AnswerTextBoxKeyDown;
         }
 
@@ -70,8 +76,35 @@ namespace WinFormsApp12
                 Font = new Font("Segoe UI", 12, FontStyle.Bold)
             };
 
+            _player1 = new Button
+            {
+                Location = new Point(100, 200),
+                Size = new Size(200, 60),
+                Text = "1 игрок",
+                BackColor = Color.FromArgb(40, 40, 50),
+                FlatStyle = FlatStyle.Flat,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 12, FontStyle.Bold)
+            };
+
+            _player2 = new Button
+            {
+                Location = new Point(500, 200),
+                Size = new Size(200, 60),
+                Text = "2 игрока",
+                BackColor = Color.FromArgb(40, 40, 50),
+                FlatStyle = FlatStyle.Flat,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 12, FontStyle.Bold)
+            };
+
             Controls.Add(_titleLabel);
             Controls.Add(_startButton);
+            Controls.Add(_player1);
+            Controls.Add(_player2);
+
+            _player1.Visible = false;
+            _player2.Visible = false;
 
             int buttonWidth = 220;
             int buttonHeight = 60;
@@ -110,7 +143,7 @@ namespace WinFormsApp12
             {
                 Location = new Point(20, 460),
                 Size = new Size(200, 40),
-                Text = "Новая игра",
+                Text = "Главное меню",
                 BackColor = Color.Black,
                 FlatStyle = FlatStyle.Flat,
                 ForeColor = Color.White,
@@ -177,8 +210,7 @@ namespace WinFormsApp12
         private void InitializeLevels()
         {
             _player = new Player();
-
-            _resultPresenter = new GameResultPresenter(_player, StartNewGame, () => Application.Exit());
+            _resultPresenter = new GameResultPresenter(_player, ReturnToMainMenu, () => Application.Exit());
 
             _level1 = new Level1(_player, _statusPanel, _answerTextBox, _questionLabel,
                                 OnLevel1Complete, OnGameOver, OnGameComplete);
@@ -196,8 +228,7 @@ namespace WinFormsApp12
             _isGameActive = true;
             _currentLevelNumber = 1;
 
-            
-            _resultPresenter = new GameResultPresenter(_player, StartNewGame, () => Application.Exit());
+            _resultPresenter = new GameResultPresenter(_player, ReturnToMainMenu, () => Application.Exit());
 
             _level1 = new Level1(_player, _statusPanel, _answerTextBox, _questionLabel,
                                 OnLevel1Complete, OnGameOver, OnGameComplete);
@@ -313,17 +344,60 @@ namespace WinFormsApp12
 
         private void StartButtonClicked(object sender, EventArgs e)
         {
-            _titleLabel.Visible = false;
+            _titleLabel.Text = "Выберите режим игры";
             _startButton.Visible = false;
+            _player1.Visible = true;
+            _player2.Visible = true;
+        }
+
+        private void Player1Clicked(object sender, EventArgs e)
+        {
+            _titleLabel.Visible = false;
+            _player1.Visible = false;
+            _player2.Visible = false;
             _statusPanel.Visible = true;
             _questionLabel.Visible = true;
             _newGameButton.Visible = true;
             StartNewGame();
         }
 
+        private void Player2Clicked(object sender, EventArgs e)
+        {
+            player_2 player2Form = new player_2();
+            player2Form.Show();
+            this.Hide();
+        }
+
         private void OnNewGameButtonClicked(object sender, EventArgs e)
         {
-            StartNewGame();
+            ReturnToMainMenu();
+        }
+
+        public void ReturnToMainMenu()
+        {
+            _isGameActive = false;
+
+            _level1?.Stop();
+            _level2?.Stop();
+            _level3?.Stop();
+
+            _statusPanel.Visible = false;
+            _questionLabel.Visible = false;
+            _optionOneButton.Visible = false;
+            _optionTwoButton.Visible = false;
+            _optionThreeButton.Visible = false;
+            _answerTextBox.Visible = false;
+            _newGameButton.Visible = false;
+
+            _titleLabel.Text = "Игра ума";
+            _titleLabel.Visible = true;
+            _startButton.Visible = true;
+            _player1.Visible = false;
+            _player2.Visible = false;
+
+            _player = new Player();
+
+            Refresh();
         }
 
         public void UpdateUIFromPlayer(Player player)
@@ -335,19 +409,6 @@ namespace WinFormsApp12
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            if (_isGameActive && _player != null && _player.Question < _player.TotalAnswers && _player.CurrentHealth > 0)
-            {
-                DialogResult result = MessageBox.Show(
-                    "Вы уверены, что хотите выйти из игры?\nПрогресс будет потерян!",
-                    "Подтверждение выхода",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question);
-
-                if (result == DialogResult.No)
-                {
-                    e.Cancel = true;
-                }
-            }
             base.OnFormClosing(e);
         }
     }
