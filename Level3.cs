@@ -10,9 +10,7 @@ namespace WinFormsApp12
         private List<QuestionData> _questions;
         private int _currentQuestionIndex;
         private Player _player;
-        private Button _optionOneButton;
-        private Button _optionTwoButton;
-        private Button _optionThreeButton;
+        private TextBox _answerTextBox;
         private Label _questionLabel;
         private CorrectAnswerHandler _correctHandler;
         private WrongAnswerHandler _wrongHandler;
@@ -21,13 +19,11 @@ namespace WinFormsApp12
         private bool _isActive;
 
         public Level3(Player player, StatusPanel statusPanel,
-                      Button optionOne, Button optionTwo, Button optionThree,
+                      TextBox answerTextBox,
                       Label questionLabel, Action onGameComplete, Action onGameOver)
         {
             _player = player;
-            _optionOneButton = optionOne;
-            _optionTwoButton = optionTwo;
-            _optionThreeButton = optionThree;
+            _answerTextBox = answerTextBox;
             _questionLabel = questionLabel;
             _onGameComplete = onGameComplete;
             _onGameOver = onGameOver;
@@ -62,22 +58,32 @@ namespace WinFormsApp12
 
             QuestionData question = _questions[_currentQuestionIndex];
             _questionLabel.Text = question.Text;
-
-            _optionOneButton.Text = question.Options[0];
-            _optionTwoButton.Text = question.Options[1];
-            _optionThreeButton.Text = question.Options[2];
-
-            _optionOneButton.Visible = true;
-            _optionTwoButton.Visible = true;
-            _optionThreeButton.Visible = true;
+            _answerTextBox.Clear();
+            _answerTextBox.Visible = true;
+            _answerTextBox.Focus();
         }
 
-        public void CheckAnswer(int selectedIndex)
+        public void CheckAnswer(string userAnswer)
         {
             if (!_isActive) return;
-
+            if (_currentQuestionIndex >= _questions.Count)
+            {
+                return;
+            }
+            if (userAnswer != "1" && userAnswer != "2" && userAnswer != "3")
+            {
+                MessageBox.Show("Введите число 1, 2 или 3", 
+                    "Неверный ввод", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Warning);
+                _answerTextBox.Clear();
+                _answerTextBox.Focus();
+                return;
+            }
+            int selected = Convert.ToInt32(userAnswer);
+            selected--;
             QuestionData currentQuestion = _questions[_currentQuestionIndex];
-            bool isCorrect = (selectedIndex == currentQuestion.CorrectOptionIndex);
+            bool isCorrect = (selected == currentQuestion.CorrectOptionIndex);
 
             if (isCorrect)
             {
@@ -93,19 +99,22 @@ namespace WinFormsApp12
                     return;
                 }
             }
-
+            _answerTextBox.Clear();
             _currentQuestionIndex++;
-
             if (_currentQuestionIndex < _questions.Count && _player.CurrentHealth > 0)
+            {
                 ShowQuestion();
+            }
+            else
+            {
+                CompleteGame();
+            }
         }
 
         private void CompleteGame()
         {
             _isActive = false;
-            _optionOneButton.Visible = false;
-            _optionTwoButton.Visible = false;
-            _optionThreeButton.Visible = false;
+            _answerTextBox.Visible = false;
             _onGameComplete?.Invoke();
         }
 

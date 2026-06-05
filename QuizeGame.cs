@@ -218,8 +218,7 @@ namespace WinFormsApp12
             _level2 = new Level2(_player, _statusPanel, _optionOneButton, _optionTwoButton,
                                 _optionThreeButton, _questionLabel, OnLevel2Complete, OnGameOver, OnGameComplete);
 
-            _level3 = new Level3(_player, _statusPanel, _optionOneButton, _optionTwoButton,
-                                _optionThreeButton, _questionLabel, OnGameComplete, OnGameOver);
+            _level3 = new Level3(_player, _statusPanel, _answerTextBox, _questionLabel, OnGameComplete, OnGameOver);
         }
 
         private void StartNewGame()
@@ -236,8 +235,7 @@ namespace WinFormsApp12
             _level2 = new Level2(_player, _statusPanel, _optionOneButton, _optionTwoButton,
                                 _optionThreeButton, _questionLabel, OnLevel2Complete, OnGameOver, OnGameComplete);
 
-            _level3 = new Level3(_player, _statusPanel, _optionOneButton, _optionTwoButton,
-                                _optionThreeButton, _questionLabel, OnGameComplete, OnGameOver);
+            _level3 = new Level3(_player, _statusPanel, _answerTextBox, _questionLabel, OnGameComplete, OnGameOver);
 
             _answerTextBox.Visible = false;
             _optionOneButton.Visible = false;
@@ -249,6 +247,8 @@ namespace WinFormsApp12
             _optionThreeButton.Enabled = true;
             _answerTextBox.Enabled = true;
 
+            _statusPanel.HidePlayerName();
+
             StartLevel1();
             UpdateUIFromPlayer(_player);
         }
@@ -256,6 +256,10 @@ namespace WinFormsApp12
         private void StartLevel1()
         {
             _currentLevelNumber = 1;
+            _answerTextBox.Visible = true;
+            _optionOneButton.Visible = false;
+            _optionTwoButton.Visible = false;
+            _optionThreeButton.Visible = false;
             _level1.Start();
         }
 
@@ -263,6 +267,10 @@ namespace WinFormsApp12
         {
             _player.CurrentHealth = _player.MaxHealth;
             _currentLevelNumber = 2;
+            _answerTextBox.Visible = false;
+            _optionOneButton.Visible = true;
+            _optionTwoButton.Visible = true;
+            _optionThreeButton.Visible = true;
             _level2.Start();
         }
 
@@ -270,6 +278,10 @@ namespace WinFormsApp12
         {
             _player.CurrentHealth = _player.MaxHealth;
             _currentLevelNumber = 3;
+            _answerTextBox.Visible = true;
+            _optionOneButton.Visible = false;
+            _optionTwoButton.Visible = false;
+            _optionThreeButton.Visible = false;
             _level3.Start();
         }
 
@@ -328,17 +340,20 @@ namespace WinFormsApp12
             {
                 _level2?.CheckAnswer(selectedIndex);
             }
-            else if (_currentLevelNumber == 3)
-            {
-                _level3?.CheckAnswer(selectedIndex);
-            }
         }
 
         private void AnswerTextBoxKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Enter && _currentLevelNumber == 1 && _isGameActive)
+            if (e.KeyCode == Keys.Enter && _isGameActive)
             {
-                _level1?.CheckAnswer(_answerTextBox.Text);
+                if (_currentLevelNumber == 1)
+                {
+                    _level1?.CheckAnswer(_answerTextBox.Text);
+                }
+                else if (_currentLevelNumber == 3)
+                {
+                    _level3?.CheckAnswer(_answerTextBox.Text);
+                }
             }
         }
 

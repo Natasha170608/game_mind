@@ -76,7 +76,10 @@ namespace WinFormsApp12
         public void CheckAnswer(int selectedIndex)
         {
             if (!_isActive) return;
-
+            if (_currentQuestionIndex >= _questions.Count)
+            {
+                return;
+            }
             QuestionData currentQuestion = _questions[_currentQuestionIndex];
             bool isCorrect = (selectedIndex == currentQuestion.CorrectOptionIndex);
 
@@ -96,9 +99,15 @@ namespace WinFormsApp12
             }
 
             _currentQuestionIndex++;
-
-            if (_currentQuestionIndex < _questions.Count && _player.CurrentHealth > 0)
+            if (_currentQuestionIndex >= _questions.Count)
+            {
+                CompleteLevel();
+                return;
+            }
+            if (_player.CurrentHealth > 0)
+            {
                 ShowQuestion();
+            }
         }
 
         private void CompleteLevel()

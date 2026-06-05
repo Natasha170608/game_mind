@@ -27,8 +27,8 @@ namespace WinFormsApp12
 
         private bool _isGameActive = true;
         private int _currentLevelNumber;
-        private int _currentPlayerTurn; // 1 или 2
-        private int _inputStep; // 0 - имя игрока 1, 1 - имя игрока 2
+        private int _currentPlayerTurn;
+        private int _inputStep;
 
         private Level1 _level1;
         private Level2 _level2;
@@ -54,7 +54,6 @@ namespace WinFormsApp12
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormClosing += Player2_FormClosing;
 
-            // ========== ЭКРАН ВВОДА ИМЁН ==========
             _titleLabel = new Label
             {
                 Location = new Point(250, 80),
@@ -89,7 +88,6 @@ namespace WinFormsApp12
             Controls.Add(_instructionLabel);
             Controls.Add(_playerNameTextBox);
 
-            // ========== ИГРОВЫЕ ЭЛЕМЕНТЫ ==========
             int buttonWidth = 220;
             int buttonHeight = 60;
             int startX = (this.Width - (buttonWidth * 3 + 60)) / 2;
@@ -166,7 +164,6 @@ namespace WinFormsApp12
                 Controls.Add(btn);
             }
 
-            // ========== КНОПКА ГЛАВНОГО МЕНЮ ==========
             _mainMenuButton = new Button
             {
                 Location = new Point(20, 460),
@@ -208,7 +205,6 @@ namespace WinFormsApp12
 
                 if (_inputStep == 0)
                 {
-                    // Сохраняем имя первого игрока
                     _player1Name = name;
                     _inputStep = 1;
                     _instructionLabel.Text = "Введите имя второго игрока и нажмите Enter:";
@@ -217,7 +213,6 @@ namespace WinFormsApp12
                 }
                 else
                 {
-                    // Сохраняем имя второго игрока и начинаем игру
                     _player2Name = name;
                     StartGame();
                 }
@@ -226,17 +221,14 @@ namespace WinFormsApp12
 
         private void StartGame()
         {
-            // Скрываем элементы ввода имён
             _titleLabel.Visible = false;
             _instructionLabel.Visible = false;
             _playerNameTextBox.Visible = false;
 
-            // Показываем игровые элементы
             _statusPanel.Visible = true;
             _questionLabel.Visible = true;
             _mainMenuButton.Visible = true;
 
-            // Создаём игроков (жизни = 100, по сути бесконечные)
             _player1 = new Player();
             _player1.MaxHealth = 100;
             _player1.CurrentHealth = 100;
@@ -250,7 +242,6 @@ namespace WinFormsApp12
             _currentPlayerTurn = 1;
             _currentPlayer = _player1;
 
-            // Запускаем игру для первого игрока
             StartNewGameForCurrentPlayer();
         }
 
@@ -259,25 +250,21 @@ namespace WinFormsApp12
             _isGameActive = true;
             _currentLevelNumber = 1;
 
-            // Сбрасываем здоровье текущего игрока (если нужно)
             if (_currentPlayer.CurrentHealth <= 0)
             {
                 _currentPlayer.CurrentHealth = _currentPlayer.MaxHealth;
             }
 
-            // Обновляем статус панель с именем текущего игрока
             string currentPlayerName = (_currentPlayerTurn == 1) ? _player1Name : _player2Name;
             _statusPanel.UpdateStatus(_currentPlayer, currentPlayerName);
 
-            // Создаём уровни для текущего игрока
             _level1 = new Level1(_currentPlayer, _statusPanel, _answerTextBox, _questionLabel,
                                 OnLevel1Complete, OnGameOver, OnGameComplete);
 
             _level2 = new Level2(_currentPlayer, _statusPanel, _optionOneButton, _optionTwoButton,
                                 _optionThreeButton, _questionLabel, OnLevel2Complete, OnGameOver, OnGameComplete);
 
-            _level3 = new Level3(_currentPlayer, _statusPanel, _optionOneButton, _optionTwoButton,
-                                _optionThreeButton, _questionLabel, OnGameComplete, OnGameOver);
+            _level3 = new Level3(_currentPlayer, _statusPanel, _answerTextBox, _questionLabel, OnGameComplete, OnGameOver);
 
             _answerTextBox.Visible = false;
             _optionOneButton.Visible = false;
@@ -295,18 +282,30 @@ namespace WinFormsApp12
         private void StartLevel1()
         {
             _currentLevelNumber = 1;
+            _answerTextBox.Visible = true;
+            _optionOneButton.Visible = false;
+            _optionTwoButton.Visible = false;
+            _optionThreeButton.Visible = false;
             _level1.Start();
         }
 
         private void StartLevel2()
         {
             _currentLevelNumber = 2;
+            _answerTextBox.Visible = false;
+            _optionOneButton.Visible = true;
+            _optionTwoButton.Visible = true;
+            _optionThreeButton.Visible = true;
             _level2.Start();
         }
 
         private void StartLevel3()
         {
             _currentLevelNumber = 3;
+            _answerTextBox.Visible = true;
+            _optionOneButton.Visible = false;
+            _optionTwoButton.Visible = false;
+            _optionThreeButton.Visible = false;
             _level3.Start();
         }
 
@@ -342,7 +341,6 @@ namespace WinFormsApp12
             _optionThreeButton.Enabled = false;
             _answerTextBox.Enabled = false;
 
-            // Сохраняем результат текущего игрока и переключаемся
             SwitchToNextPlayer();
         }
 
@@ -354,7 +352,6 @@ namespace WinFormsApp12
             _optionThreeButton.Enabled = false;
             _answerTextBox.Enabled = false;
 
-            // Даже при "смерти" переключаемся на следующего игрока
             SwitchToNextPlayer();
         }
 
@@ -362,7 +359,6 @@ namespace WinFormsApp12
         {
             if (_currentPlayerTurn == 1)
             {
-                // Первый игрок закончил, начинаем второго
                 _currentPlayerTurn = 2;
                 _currentPlayer = _player2;
 
@@ -378,7 +374,6 @@ namespace WinFormsApp12
             }
             else
             {
-                // Оба игрока закончили, показываем результат
                 ShowFinalResult();
             }
         }
@@ -390,31 +385,50 @@ namespace WinFormsApp12
             _optionThreeButton.Visible = false;
             _answerTextBox.Visible = false;
 
-            string winner;
-            int winnerScore;
-            int loserScore;
-            string winnerName;
-            string loserName;
-
             if (_player1.CorrectAnswers > _player2.CorrectAnswers)
             {
-                winner = _player1Name;
-                winnerScore = _player1.CorrectAnswers;
-                loserScore = _player2.CorrectAnswers;
-                winnerName = _player1Name;
-                loserName = _player2Name;
+                string resultMessage = $"ПОБЕДИТЕЛЬ: {_player1Name}!\n\n" +
+                                      $"Результаты:\n" +
+                                      $"{_player1Name}: {_player1.CorrectAnswers} правильных ответов\n" +
+                                      $"{_player2Name}: {_player2.CorrectAnswers} правильных ответов\n\n" +
+                                      $"{_player1Name} ответил правильно на {_player1.CorrectAnswers - _player2.CorrectAnswers} " +
+                                      $"вопросов больше!\n\nХотите вернуться в главное меню?";
+
+                DialogResult finalResult = MessageBox.Show(resultMessage, "ИГРА ЗАВЕРШЕНА",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                if (finalResult == DialogResult.Yes)
+                {
+                    ReturnToMainMenu();
+                }
+                else
+                {
+                    Close();
+                }
             }
             else if (_player2.CorrectAnswers > _player1.CorrectAnswers)
             {
-                winner = _player2Name;
-                winnerScore = _player2.CorrectAnswers;
-                loserScore = _player1.CorrectAnswers;
-                winnerName = _player2Name;
-                loserName = _player1Name;
+                string resultMessage = $"ПОБЕДИТЕЛЬ: {_player2Name}!\n\n" +
+                                      $"Результаты:\n" +
+                                      $"{_player1Name}: {_player1.CorrectAnswers} правильных ответов\n" +
+                                      $"{_player2Name}: {_player2.CorrectAnswers} правильных ответов\n\n" +
+                                      $"{_player2Name} ответил правильно на {_player2.CorrectAnswers - _player1.CorrectAnswers} " +
+                                      $"вопросов больше!\n\nХотите вернуться в главное меню?";
+
+                DialogResult finalResult = MessageBox.Show(resultMessage, "ИГРА ЗАВЕРШЕНА",
+                    MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+                if (finalResult == DialogResult.Yes)
+                {
+                    ReturnToMainMenu();
+                }
+                else
+                {
+                    Close();
+                }
             }
             else
             {
-                // Ничья
                 string message = $"НИЧЬЯ!\n\n" +
                                $"{_player1Name}: {_player1.CorrectAnswers} правильных ответов\n" +
                                $"{_player2Name}: {_player2.CorrectAnswers} правильных ответов\n\n" +
@@ -431,49 +445,24 @@ namespace WinFormsApp12
                 {
                     Close();
                 }
-                return;
-            }
-
-            string resultMessage = $"ПОБЕДИТЕЛЬ: {winner}!\n\n" +
-                                  $"Результаты:\n" +
-                                  $"{winnerName}: {winnerScore} правильных ответов\n" +
-                                  $"{loserName}: {loserScore} правильных ответов\n\n" +
-                                  $"{winnerName} ответил правильно на {winnerScore - loserScore} " +
-                                  $"вопросов больше!\n\nХотите вернуться в главное меню?";
-
-            DialogResult finalResult = MessageBox.Show(resultMessage, "ИГРА ЗАВЕРШЕНА",
-                MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
-            if (finalResult == DialogResult.Yes)
-            {
-                ReturnToMainMenu();
-            }
-            else
-            {
-                Close();
             }
         }
 
         private void ReturnToMainMenu()
         {
-            // Останавливаем текущую игру
             _isGameActive = false;
 
-            // Останавливаем все уровни
             _level1?.Stop();
             _level2?.Stop();
             _level3?.Stop();
 
-            // Закрываем форму двух игроков
             this.Close();
 
-            // Показываем главную форму
             var mainForm = Program.AppState.MainForm;
             if (mainForm != null)
             {
                 mainForm.Show();
 
-                // Сбрасываем главную форму в главное меню
                 if (mainForm is QuizeGame quizeGame)
                 {
                     quizeGame.ReturnToMainMenu();
@@ -506,17 +495,20 @@ namespace WinFormsApp12
             {
                 _level2?.CheckAnswer(selectedIndex);
             }
-            else if (_currentLevelNumber == 3)
-            {
-                _level3?.CheckAnswer(selectedIndex);
-            }
         }
 
         private void AnswerTextBoxKeyDown(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Enter && _currentLevelNumber == 1 && _isGameActive)
+            if (e.KeyCode == Keys.Enter && _isGameActive)
             {
-                _level1?.CheckAnswer(_answerTextBox.Text);
+                if (_currentLevelNumber == 1)
+                {
+                    _level1?.CheckAnswer(_answerTextBox.Text);
+                }
+                else if (_currentLevelNumber == 3)
+                {
+                    _level3?.CheckAnswer(_answerTextBox.Text);
+                }
             }
         }
 
