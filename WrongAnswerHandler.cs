@@ -9,7 +9,6 @@ namespace WinFormsApp12
         private StatusPanel _statusPanel;
         private Action _onLevelComplete;
         private Action _onGameOver;
-        private Action _onGameComplete;
 
         public WrongAnswerHandler(Player player, StatusPanel statusPanel,
                                   Action onLevelComplete, Action onGameOver, Action onGameComplete)
@@ -18,7 +17,6 @@ namespace WinFormsApp12
             _statusPanel = statusPanel;
             _onLevelComplete = onLevelComplete;
             _onGameOver = onGameOver;
-            _onGameComplete = onGameComplete;
         }
 
         public bool Handle()
@@ -35,13 +33,6 @@ namespace WinFormsApp12
                 _onGameOver?.Invoke();
                 return false;
             }
-
-            if (_player.Question >= _player.TotalAnswers && _player.CurrentHealth > 0)
-            {
-                _onGameComplete?.Invoke();
-                return true;
-            }
-
             return true;
         }
 

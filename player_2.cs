@@ -17,22 +17,20 @@ namespace WinFormsApp12
         private TextBox _answerTextBox;
         private TextBox _playerNameTextBox;
         private Label _instructionLabel;
-
         private Player _currentPlayer;
         private Player _player1;
         private Player _player2;
-
         private string _player1Name;
         private string _player2Name;
-
         private bool _isGameActive = true;
         private int _currentLevelNumber;
         private int _currentPlayerTurn;
         private int _inputStep;
-
         private Level1 _level1;
         private Level2 _level2;
         private Level3 _level3;
+        private bool _isGameCompletelyFinished = false;
+        private int _playersCompleted = 0;
 
         public player_2()
         {
@@ -224,63 +222,62 @@ namespace WinFormsApp12
             _titleLabel.Visible = false;
             _instructionLabel.Visible = false;
             _playerNameTextBox.Visible = false;
-
             _statusPanel.Visible = true;
             _questionLabel.Visible = true;
             _mainMenuButton.Visible = true;
-
             _player1 = new Player();
             _player1.MaxHealth = 100;
             _player1.CurrentHealth = 100;
             _player1.TotalAnswers = 30;
-
             _player2 = new Player();
             _player2.MaxHealth = 100;
             _player2.CurrentHealth = 100;
             _player2.TotalAnswers = 30;
-
             _currentPlayerTurn = 1;
             _currentPlayer = _player1;
-
+            _playersCompleted = 0;
+            _isGameCompletelyFinished = false;
             StartNewGameForCurrentPlayer();
         }
 
         private void StartNewGameForCurrentPlayer()
         {
+            _currentPlayer.HasCompletedGame = false;
             _isGameActive = true;
             _currentLevelNumber = 1;
-
             if (_currentPlayer.CurrentHealth <= 0)
             {
                 _currentPlayer.CurrentHealth = _currentPlayer.MaxHealth;
             }
-
             string currentPlayerName = (_currentPlayerTurn == 1) ? _player1Name : _player2Name;
             _statusPanel.UpdateStatus(_currentPlayer, currentPlayerName);
-
             _level1 = new Level1(_currentPlayer, _statusPanel, _answerTextBox, _questionLabel,
                                 OnLevel1Complete, OnGameOver, OnGameComplete);
-
             _level2 = new Level2(_currentPlayer, _statusPanel, _optionOneButton, _optionTwoButton,
                                 _optionThreeButton, _questionLabel, OnLevel2Complete, OnGameOver, OnGameComplete);
-
             _level3 = new Level3(_currentPlayer, _statusPanel, _answerTextBox, _questionLabel, OnGameComplete, OnGameOver);
-
             _answerTextBox.Visible = false;
             _optionOneButton.Visible = false;
             _optionTwoButton.Visible = false;
             _optionThreeButton.Visible = false;
-
             _optionOneButton.Enabled = true;
             _optionTwoButton.Enabled = true;
             _optionThreeButton.Enabled = true;
             _answerTextBox.Enabled = true;
-
             StartLevel1();
         }
 
         private void StartLevel1()
         {
+            _currentPlayer.Level = 1;
+            if (_currentPlayerTurn == 1)
+            {
+                _statusPanel.UpdateStatus(_currentPlayer, _player1Name);
+            }
+            else
+            {
+                _statusPanel.UpdateStatus(_currentPlayer, _player2Name);
+            }
             _currentLevelNumber = 1;
             _answerTextBox.Visible = true;
             _optionOneButton.Visible = false;
@@ -291,6 +288,15 @@ namespace WinFormsApp12
 
         private void StartLevel2()
         {
+            _currentPlayer.Level = 2;
+            if (_currentPlayerTurn == 1)
+            {
+                _statusPanel.UpdateStatus(_currentPlayer, _player1Name);
+            }
+            else
+            {
+                _statusPanel.UpdateStatus(_currentPlayer, _player2Name);
+            }
             _currentLevelNumber = 2;
             _answerTextBox.Visible = false;
             _optionOneButton.Visible = true;
@@ -301,6 +307,15 @@ namespace WinFormsApp12
 
         private void StartLevel3()
         {
+            _currentPlayer.Level = 3;
+            if (_currentPlayerTurn == 1)
+            {
+                _statusPanel.UpdateStatus(_currentPlayer, _player1Name);
+            }
+            else
+            {
+                _statusPanel.UpdateStatus(_currentPlayer, _player2Name);
+            }
             _currentLevelNumber = 3;
             _answerTextBox.Visible = true;
             _optionOneButton.Visible = false;
@@ -335,33 +350,40 @@ namespace WinFormsApp12
 
         private void OnGameComplete()
         {
+            if (!_isGameActive) return;
+            if (_currentPlayer.HasCompletedGame) return;
+            _currentPlayer.HasCompletedGame = true;
             _isGameActive = false;
             _optionOneButton.Enabled = false;
             _optionTwoButton.Enabled = false;
             _optionThreeButton.Enabled = false;
             _answerTextBox.Enabled = false;
-
+            _playersCompleted++;
             SwitchToNextPlayer();
         }
 
         private void OnGameOver()
         {
+            if (!_isGameActive) return;
+            if (_currentPlayer.HasCompletedGame) return;
+            _currentPlayer.HasCompletedGame = true;
             _isGameActive = false;
             _optionOneButton.Enabled = false;
             _optionTwoButton.Enabled = false;
             _optionThreeButton.Enabled = false;
             _answerTextBox.Enabled = false;
-
+            _playersCompleted++;
             SwitchToNextPlayer();
         }
 
         private void SwitchToNextPlayer()
         {
-            if (_currentPlayerTurn == 1)
+            if (_isGameCompletelyFinished) return;
+            if (_currentPlayerTurn == 2 && _playersCompleted == 1) return;
+            if (_playersCompleted == 1 && _currentPlayerTurn == 1)
             {
                 _currentPlayerTurn = 2;
                 _currentPlayer = _player2;
-
                 MessageBox.Show($"Игрок {_player1Name} завершил игру!\n" +
                                $"Правильных ответов: {_player1.CorrectAnswers}\n" +
                                $"Неверных ответов: {_player1.WrongAnswer}\n\n" +
@@ -369,10 +391,9 @@ namespace WinFormsApp12
                                "Смена игрока",
                                MessageBoxButtons.OK,
                                MessageBoxIcon.Information);
-
                 StartNewGameForCurrentPlayer();
             }
-            else
+            else if (_playersCompleted == 2)
             {
                 ShowFinalResult();
             }
@@ -380,11 +401,12 @@ namespace WinFormsApp12
 
         private void ShowFinalResult()
         {
+            if (_isGameCompletelyFinished) return;
+            _isGameCompletelyFinished = true;
             _optionOneButton.Visible = false;
             _optionTwoButton.Visible = false;
             _optionThreeButton.Visible = false;
             _answerTextBox.Visible = false;
-
             if (_player1.CorrectAnswers > _player2.CorrectAnswers)
             {
                 string resultMessage = $"ПОБЕДИТЕЛЬ: {_player1Name}!\n\n" +
@@ -393,10 +415,8 @@ namespace WinFormsApp12
                                       $"{_player2Name}: {_player2.CorrectAnswers} правильных ответов\n\n" +
                                       $"{_player1Name} ответил правильно на {_player1.CorrectAnswers - _player2.CorrectAnswers} " +
                                       $"вопросов больше!\n\nХотите вернуться в главное меню?";
-
                 DialogResult finalResult = MessageBox.Show(resultMessage, "ИГРА ЗАВЕРШЕНА",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
                 if (finalResult == DialogResult.Yes)
                 {
                     ReturnToMainMenu();
@@ -414,10 +434,8 @@ namespace WinFormsApp12
                                       $"{_player2Name}: {_player2.CorrectAnswers} правильных ответов\n\n" +
                                       $"{_player2Name} ответил правильно на {_player2.CorrectAnswers - _player1.CorrectAnswers} " +
                                       $"вопросов больше!\n\nХотите вернуться в главное меню?";
-
                 DialogResult finalResult = MessageBox.Show(resultMessage, "ИГРА ЗАВЕРШЕНА",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
                 if (finalResult == DialogResult.Yes)
                 {
                     ReturnToMainMenu();
@@ -433,10 +451,8 @@ namespace WinFormsApp12
                                $"{_player1Name}: {_player1.CorrectAnswers} правильных ответов\n" +
                                $"{_player2Name}: {_player2.CorrectAnswers} правильных ответов\n\n" +
                                $"Хотите вернуться в главное меню?";
-
                 DialogResult result = MessageBox.Show(message, "НИЧЬЯ!",
                     MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-
                 if (result == DialogResult.Yes)
                 {
                     ReturnToMainMenu();

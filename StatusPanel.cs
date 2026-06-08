@@ -100,15 +100,19 @@ namespace WinFormsApp12
         public void UpdateStatus(Player player)
         {
             if (player == null) return;
-
             _healthLabel.Text = $"Здоровье: {player.CurrentHealth}";
             _maxhealthLabel.Text = $"Макс здоровье: {player.MaxHealth}";
             _levelLabel.Text = $"Уровень: {player.Level}";
-            _totalAnswersLabel.Text = $"{player.Question}/{player.TotalAnswers}";
+            if (player.Question < player.TotalAnswers)
+            {
+                _totalAnswersLabel.Text = $"{player.Question + 1}/{player.TotalAnswers}";
+            }
+            else
+            {
+                _totalAnswersLabel.Text = $"{player.Question}/{player.TotalAnswers}";
+            }
             _correctLabel.Text = $"Правильные: {player.CorrectAnswers}";
             _wrongAnswerLabel.Text = $"Неверные: {player.WrongAnswer}";
-
-            _playerNameLabel.Visible = false;
         }
 
         public void UpdateStatus(Player player, string playerName)

@@ -210,7 +210,7 @@ namespace WinFormsApp12
         private void InitializeLevels()
         {
             _player = new Player();
-            _resultPresenter = new GameResultPresenter(_player, ReturnToMainMenu, () => Application.Exit());
+            _resultPresenter = new GameResultPresenter(_player, StartNewGame, ReturnToMainMenu);
 
             _level1 = new Level1(_player, _statusPanel, _answerTextBox, _questionLabel,
                                 OnLevel1Complete, OnGameOver, OnGameComplete);
@@ -227,7 +227,7 @@ namespace WinFormsApp12
             _isGameActive = true;
             _currentLevelNumber = 1;
 
-            _resultPresenter = new GameResultPresenter(_player, ReturnToMainMenu, () => Application.Exit());
+            _resultPresenter = new GameResultPresenter(_player, StartNewGame, ReturnToMainMenu);
 
             _level1 = new Level1(_player, _statusPanel, _answerTextBox, _questionLabel,
                                 OnLevel1Complete, OnGameOver, OnGameComplete);
@@ -265,23 +265,27 @@ namespace WinFormsApp12
 
         private void StartLevel2()
         {
+            _player.Level = 2;
             _player.CurrentHealth = _player.MaxHealth;
             _currentLevelNumber = 2;
             _answerTextBox.Visible = false;
             _optionOneButton.Visible = true;
             _optionTwoButton.Visible = true;
             _optionThreeButton.Visible = true;
+            UpdateUIFromPlayer(_player);
             _level2.Start();
         }
 
         private void StartLevel3()
         {
+            _player.Level = 3;
             _player.CurrentHealth = _player.MaxHealth;
             _currentLevelNumber = 3;
             _answerTextBox.Visible = true;
             _optionOneButton.Visible = false;
             _optionTwoButton.Visible = false;
             _optionThreeButton.Visible = false;
+            UpdateUIFromPlayer(_player);
             _level3.Start();
         }
 

@@ -23,9 +23,9 @@ namespace WinFormsApp12
                              $"Неверных ответов: {_player.WrongAnswer}\n" +
                              $"Всего вопросов: {_player.TotalAnswers}\n\n" +
                              $"Вы успешно прошли викторину!\n\n" +
-                             $"1 - Новая игра\n" +
-                             $"2 - Главное меню\n" +
-                             $"Esc - Выход";
+                             $"Да - Новая игра\n" +
+                             $"Нет - Главное меню\n" +
+                             $"Отмена - Выход";
 
             ShowResultDialog(message, "ПОБЕДА!");
         }
@@ -36,9 +36,9 @@ namespace WinFormsApp12
                              $"Вы проиграли!\n" +
                              $"Верных ответов: {_player.CorrectAnswers}\n" +
                              $"Неверных ответов: {_player.WrongAnswer}\n\n" +
-                             $"1 - Новая игра\n" +
-                             $"2 - Главное меню\n" +
-                             $"Esc - Выход";
+                             $"Да - Новая игра\n" +
+                             $"Нет - Главное меню\n" +
+                             $"Отмена - Выход";
 
             ShowResultDialog(message, "ИГРА ЗАВЕРШЕНА");
         }
